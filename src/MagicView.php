@@ -195,8 +195,7 @@ class MagicView
 
     private function htmlBodyBegin()
     {
-        $background_color = UserConfig::getWindowsBackgroundColor();
-        echo Html::beginTag('div', ['class' => '', 'style' => 'background-color:' . $background_color . '; border-radius: 0;padding: -12px; padding-right: -12px;']);
+        echo Html::beginTag('div', ['class' => '', 'style' => 'background-color:white; border-radius: 0;padding: -12px; padding-right: -12px;']);
             echo Html::beginTag('div', ['class' => 'box-body pad content-in-modal']);
                 echo Html::beginTag('div', ['class' => 'col-md-12', 'style' => 'padding-left: 6px; padding-right: 6px;']);
                     echo Html::beginTag('div', ['class' => 'row', 'style' => 'margin-bottom: -20px;']);
