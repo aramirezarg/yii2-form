@@ -5,9 +5,8 @@
  * Time: 17:59
  */
 
-namespace app\components\magic\form\sources;
+namespace magicsoft\form;
 
-use app\modules\config\models\UserConfig;
 use magicsoft\select\MagicSelectHelper;
 use Yii;
 use yii\helpers\ArrayHelper;
@@ -142,19 +141,19 @@ class MagicView
         }
 
         echo Html::beginTag('div', ['class' => $this->getModelName() . '-' . $this->getActionInModel()]);
-            echo Html::beginTag('div', ['class' => 'row', 'style' => 'margin-bottom: -20px;']);
-                echo Html::beginTag('div', ['class' => 'col-md-12']);
-                    echo Html::beginTag('div', ['class' => 'box box-default', 'style' => 'background-color: #d9dde2;']);
-                        $this->renderHtmlTitle();
-                        $this->htmlBodyBegin();
+        echo Html::beginTag('div', ['class' => 'row', 'style' => 'margin-bottom: -20px;']);
+        echo Html::beginTag('div', ['class' => 'col-md-12']);
+        echo Html::beginTag('div', ['class' => 'box box-default', 'style' => 'background-color: #d9dde2;']);
+        $this->renderHtmlTitle();
+        $this->htmlBodyBegin();
     }
 
     private function htmlEnd()
     {
-                        $this->htmlBodyEnd();
-                    echo Html::endTag('div');
-                echo Html::endTag('div');
-            echo Html::endTag('div');
+        $this->htmlBodyEnd();
+        echo Html::endTag('div');
+        echo Html::endTag('div');
+        echo Html::endTag('div');
         echo Html::endTag('div');
 
         if ($this->form) {
@@ -166,7 +165,7 @@ class MagicView
     private function renderHtmlTitle()
     {
         echo Html::beginTag('div', ['class' => 'box-header header-form modal-header', 'style' => 'background-color: whitesmoke; color: white']);
-            $this->renderButtons();
+        $this->renderButtons();
         echo Html::endTag('div');
     }
 
@@ -176,9 +175,9 @@ class MagicView
         $icon = $subtitle != '' ? '<i class="ion ion-ios-arrow-right" style="padding-right: 5px; padding-left: 5px;"></i>' : '';
 
         echo Html::beginTag('h3', ['class' => 'box-title']);
-            echo Html::tag('i', '', ['class' => MagicSelectHelper::getIcon($this->model->formName()), 'style' => 'font-size: x-large; text-decoration: none; padding-right: 5px; color:orange;']);
-            echo Html::tag('strong', $this->title, ['style' => 'font-size: x-large; text-decoration: none; color:black']);
-            echo Html::tag('small', $icon . $this->getSubTitle(), ['style' => 'font-size: large; text-decoration:none;']);
+        echo Html::tag('i', '', ['class' => MagicSelectHelper::getIcon($this->model->formName()), 'style' => 'font-size: x-large; text-decoration: none; padding-right: 5px; color:orange;']);
+        echo Html::tag('strong', $this->title, ['style' => 'font-size: x-large; text-decoration: none; color:black']);
+        echo Html::tag('small', $icon . $this->getSubTitle(), ['style' => 'font-size: large; text-decoration:none;']);
         echo Html::endTag('h3');
 
         echo Html::beginTag('div', ['class' => 'box-tools pull-right for-buttons-modal', 'style' => 'top: 10px']);
@@ -196,24 +195,23 @@ class MagicView
 
     private function htmlBodyBegin()
     {
-        $background_color = UserConfig::getWindowsBackgroundColor();
-        echo Html::beginTag('div', ['class' => '', 'style' => 'background-color:' . $background_color . '; border-radius: 0;padding: -12px; padding-right: -12px;']);
-            echo Html::beginTag('div', ['class' => 'box-body pad content-in-modal']);
-                echo Html::beginTag('div', ['class' => 'col-md-12', 'style' => 'padding-left: 6px; padding-right: 6px;']);
-                    echo Html::beginTag('div', ['class' => 'row', 'style' => 'margin-bottom: -20px;']);
-                        echo Html::beginTag('div', ['class' => 'col-md-12']);
-                            echo Html::beginTag('div', []);
-                                echo Html::beginTag('div', ['class' => 'box-body']);
+        echo Html::beginTag('div', ['class' => '', 'style' => 'background-color:white; border-radius: 0;padding: -12px; padding-right: -12px;']);
+        echo Html::beginTag('div', ['class' => 'box-body pad content-in-modal']);
+        echo Html::beginTag('div', ['class' => 'col-md-12', 'style' => 'padding-left: 6px; padding-right: 6px;']);
+        echo Html::beginTag('div', ['class' => 'row', 'style' => 'margin-bottom: -20px;']);
+        echo Html::beginTag('div', ['class' => 'col-md-12']);
+        echo Html::beginTag('div', []);
+        echo Html::beginTag('div', ['class' => 'box-body']);
     }
 
     private function htmlBodyEnd()
     {
-                                echo Html::endTag('div');
-                            echo Html::endTag('div');
-                        echo Html::endTag('div');
-                    echo Html::endTag('div');
-                echo Html::endTag('div');
-            echo Html::endTag('div');
+        echo Html::endTag('div');
+        echo Html::endTag('div');
+        echo Html::endTag('div');
+        echo Html::endTag('div');
+        echo Html::endTag('div');
+        echo Html::endTag('div');
         echo Html::endTag('div');
     }
 

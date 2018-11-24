@@ -29,7 +29,11 @@ You can use directly from a form, the widget will dynamically build the selector
 ```php
 <?php
 $form = \magicsoft\form\MagicForm::begin([
-    'model' => $model
+    'model' => $model,
+    'optionsView' => [
+        'title' => 'My form',
+        'subTitle' => 'Create'    
+    ]
 ]);
 
 echo $form->field($model, 'name')->textInput(['maxlength' => true, 'placeholder' => 'Name']);
@@ -37,6 +41,14 @@ echo $form->field($model, 'name')->textInput(['maxlength' => true, 'placeholder'
 echo $form->field($model, 'attribute_id')->widget(\magicsoft\select\MagicSelect::className(), []);
 
 $form::end();
+
+//This configuration set format;
+
+//If you do not want to set the format, use:
+$form = \magicsoft\form\MagicForm::begin([
+    'setFormat' => false
+]);
+//With this configuration the MagicModal no work
 ?>
 ```
 
