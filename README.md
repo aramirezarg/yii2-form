@@ -1,4 +1,4 @@
-Magic select {Beta}
+Magic Form {Beta}
 ============
 Magic form fully utilizes the functionality of https://github.com/kartik-v/yii2-widget-activeform, but set the format view used by MagicModal.
 
