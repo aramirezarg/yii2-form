@@ -7,20 +7,30 @@ use yii\helpers\ArrayHelper;
 
 class MagicForm extends ActiveForm
 {
-    public $optionsView = [];
+    public $formatOptions = [];
     public $model;
-    public $setFormat = true;
+    public $formId;
+    public $setFormat;
 
     public function init()
     {
-        $this->model = ArrayHelper::getValue($this->optionsView, 'model', $this->model);
-        $this->id = $this->id ? $this->id : $this->model->formName() . '-form';
+        $this->id = $this->formId ? $this->formId : strtolower($this->model->formName() . '-form');
+        $this->setFormat = $this->setFormat ? $this->setFormat : $this->getSetFormat();
         parent::init();
-        if($this->setFormat) MagicView::begin(array_merge($this->optionsView, ['set_form' => true, 'model' => $this->model]));
+
+        if($this->setFormat) MagicView::begin(array_merge($this->formatOptions, ['set_form' => true, 'model' => $this->model]));
     }
 
-    public static function end($set_format = true){
-        if($set_format) MagicView::end();
+    public static function end(){
+        $widget = end(self::$stack);
+        if (get_class($widget) === get_called_class()) {
+            /* @var $widget Widget */
+            if($widget->setFormat) MagicView::end();
+        }
         parent::end();
+    }
+
+    private function getSetFormat(){
+        return ArrayHelper::getValue(\Yii::$app->request->getQueryParams(), 'magic_modal_name', false);
     }
 }
