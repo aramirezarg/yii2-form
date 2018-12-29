@@ -7,98 +7,92 @@
 
 namespace magicsoft\form;
 
-use magicsoft\select\MagicSelectHelper;
+use magicsoft\base\MagicSelectHelper;
+use magicsoft\base\MagicSoftModule;
+use magicsoft\base\TranslationTrait;
+use webvimark\modules\UserManagement\components\GhostHtml;
 use Yii;
+use yii\base\Widget;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
 
-class MagicView
+class MagicView extends Widget
 {
-    private $options;
-    private $title;
-    private $sub_title;
-    private $breadcrumbs;
-    private $model;
-    private $model_id;
-    private $column_description;
-    private $buttons;
+    use TranslationTrait;
+    
+    public $model;
+    public $form;
 
-    private $content;
-    private $view;
-    private $form;
+    public $title;
+    public $subTitle;
+    public $buttons;
+    public $subContainer = true;
 
-    private $view_render;
-    private $view_render_options;
-    private $action;
-    private $set_sub_title;
-    private $set_form;
+    public $baseView = '@vendor/magicsoft/yii2-form/src/views';
 
-
-    private $base_view = '@app/components/magic/view/';
-    const SUB_TITLE_DEFAULT = true;
-
-    private $sub_titles = [
-        'view' => 'DETAIL VIEW', 'create' => 'CREATE', 'update' => 'UPDATE', 'index' => 'GENERAL VIEW',];
-
-    public static function begin($options = [])
+    public function init()
     {
-        $format = new self();
-        $format->runConfiguration($options);
-        $format->htmlBegin();
+        $this->initI18N(MagicSoftModule::getSorceLangage(), 'magicview');
+        
+        $this->beginPanel();
+        parent::init();
     }
 
-    public static function end($options = [])
-    {
-        $format = new self();
-        $format->runConfiguration($options);
-
-        $format->htmlEnd();
+    private function getDefaultMessage($message){
+        $defultSubTitles = [
+            'view' => Yii::t('magicview', 'DETAIL VIEW'),
+            'create' => Yii::t('magicview', 'CREATE'),
+            'update' => Yii::t('magicview', 'UPDATE'),
+            'index' => Yii::t('magicview', 'GENERAL VIEW'),
+            'print' => Yii::t('magicview', 'PRINT'),
+            'pdf' => Yii::t('magicview', 'PDF'),
+        ];
+        return ArrayHelper::getValue($defultSubTitles, $message, '');
     }
 
-    public function setTitle()
+    public static function begin($config = [])
     {
-        if ($this->action == 'index') {
-            $this->title = ArrayHelper::getValue($this->options, 'title', $this->getTitle());
-        } else {
-            $this->title = ArrayHelper::getValue($this->options, 'title', $this->getTitle());
-        }
+        return parent::begin($config);
     }
 
-    private function runConfiguration($options)
+    public static function end()
     {
-        $this->options = $options;
-        $this->breadcrumbs = ArrayHelper::getValue($this->options, 'breadcrumbs', true);
-        $this->view = \Yii::$app->view;
-        $this->action = \Yii::$app->controller->action->id;
-        $this->model = ArrayHelper::getValue($this->options, 'model', null);
-        $this->model_id = ArrayHelper::getValue($this->options, 'model_id', null);
-        $this->set_sub_title = ArrayHelper::getValue($this->options, 'sub_title', false) === false ? self::SUB_TITLE_DEFAULT : true;
-        $this->sub_title = ArrayHelper::getValue($this->options, 'sub_title', false);
-        $this->buttons = ArrayHelper::getValue($this->options, 'buttons', true);
-        $this->model_id = ArrayHelper::getValue($this->options, 'model_id', 'id');
-        $this->content = ArrayHelper::getValue($this->options, 'content', null);
-        $this->set_form = ArrayHelper::getValue($this->options, 'set_form', null);
-        $this->column_description = ArrayHelper::getValue($this->options, 'column_description', null);
-        $this->setTitle();
-
-        $this->setOptionsRenderView();
-    }
-
-    private function setOptionsRenderView()
-    {
-        if ($this->content) {
-            if (isset($this->content['options'])) {
-                $this->view_render_options = ArrayHelper::getValue($this->content, 'options', []);
-                $this->view_render = ArrayHelper::getValue($this->content, 'view', null);
-                $this->form = ArrayHelper::getValue($this->view_render_options, 'form', null);
-            } else {
-                $this->form = null;
-            }
+        $widget = end(self::$stack);
+        if (get_class($widget) === get_called_class()) {
+            /* @var $widget Widget */
+            $widget->endPanel();
         }
 
-        if ($this->form === null) {
-            $this->form = ArrayHelper::getValue($this->options, 'form', null);
+        parent::end();
+    }
+
+    private function beginPanel()
+    {
+        $html = '';
+        if ($this->form) {
+            $html .= Html::beginTag('div', ['class' => $this->getModelName() . '-form']);
         }
+
+        $html .= Html::beginTag('div', ['class' => 'box box-default']);
+        $html .= $this->headPanel();
+        if($this->subContainer) $html .= Html::beginTag('div', ['class' => 'box-body']);
+
+        echo $html;
+    }
+
+    private function endPanel(){
+        $html = '';
+
+        if($this->subContainer) $html .= Html::endTag('div');
+
+        if($this->form) $html .= $this->footerPanel();
+
+        $html .= Html::endTag('div');
+        
+        if ($this->form) {
+            $html .= Html::endTag('div');
+        }
+        echo $html;
     }
 
     private function getModelName()
@@ -106,117 +100,208 @@ class MagicView
         return $this->model ? $this->model->formName() : Yii::$app->controller->id;
     }
 
-    private function getSubTitle()
+    private function headPanel()
     {
-        return $this->set_sub_title ? ($this->sub_title === false ? ArrayHelper::getValue($this->sub_titles, $this->action, '') : MagicFormatter::UpperCase($this->sub_title)) : '';
+        return Html::tag('div',$this->getHtmlTitle(), ['class' => 'box-header header-form modal-header', 'style' => 'background-color: whitesmoke']);
+    }
+
+    private function bodyPanel(){}
+
+    private function footerPanel(){
+        return Html::tag('div', $this->getFormButtons(), ['class' => 'box-footer footer-form control_modal no-margin', 'style' => 'background-color: whitesmoke']);
+    }
+
+    private function getHtmlTitle(){
+        return Html::tag('h3', $this->getIcon() . $this->getTitle() . $this->getDivisor() . $this->getSubTitle(), ['class' => 'box-title']) . $this->getButtons();
+    }
+
+    private function getIcon()
+    {
+        return Html::tag('i', '', ['class' => 'fa fa-list-ul', 'style' => 'font-size: x-large; text-decoration: none; padding-right: 5px; color:orange;']);
     }
 
     private function getTitle()
     {
-        return $this->model ? $this->model->formName() : Yii::$app->controller->id;
+        return Html::tag('strong',
+            ucwords($this->title ? $this->title : ($this->model ? $this->model->formName() : Yii::$app->controller->id)),
+            ['style' => 'font-size: x-large; text-decoration: none; color:black']
+        );
     }
 
-    private function getActionInModel()
+    private function getDivisor()
     {
-        return $this->model ? ($this->model->isNewRecord ? 'form' : $this->action) : $this->action;
+        return Html::tag('i', '', ['class' => 'ion ion-ios-arrow-right', 'style' => 'padding-right: 5px; padding-left: 5px;']);
     }
 
-    private function renderContent()
+    private function getSubTitle()
     {
-        return $this->view->render($this->view_render, $this->view_render_options);
+        return Html::tag('small',
+            $this->subTitle ? MagicFormatter::UpperCase($this->subTitle) : $this->getDefaultMessage($this->getAction()),
+            ['style' => 'font-size: large; text-decoration:none;']
+        );
     }
 
-    private function renderHtml()
-    {
-        $this->htmlBegin();
-        echo $this->renderContent();
-        $this->htmlEnd();
+    private function getAction(){
+        return Yii::$app->controller->action->id;
     }
 
-    private function htmlBegin()
+    private function getButtons()
     {
-        if ($this->form) {
-            echo Html::beginTag('div', ['class' => $this->model->formName() . '-form']);
-            $this->form->begin(['id' => $this->getModelName() . '_form']);
-        }
-
-        echo Html::beginTag('div', ['class' => $this->getModelName() . '-' . $this->getActionInModel()]);
-            echo Html::beginTag('div', ['class' => 'row', 'style' => 'margin-bottom: -20px;']);
-                echo Html::beginTag('div', ['class' => 'col-md-12']);
-                    echo Html::beginTag('div', ['class' => 'box box-default', 'style' => 'background-color: #d9dde2;']);
-                        $this->renderHtmlTitle();
-                        $this->htmlBodyBegin();
-    }
-
-    private function htmlEnd()
-    {
-                        $this->htmlBodyEnd();
-                    echo Html::endTag('div');
-                echo Html::endTag('div');
-            echo Html::endTag('div');
-        echo Html::endTag('div');
-
-        if ($this->form) {
-            $this->form->end();
-            echo Html::endTag('div');
-        }
-    }
-
-    private function renderHtmlTitle()
-    {
-        echo Html::beginTag('div', ['class' => 'box-header header-form modal-header', 'style' => 'background-color: whitesmoke; color: white']);
-            $this->renderButtons();
-        echo Html::endTag('div');
-    }
-
-    private function renderButtons()
-    {
-        $subtitle = $this->getSubTitle();
-        $icon = $subtitle != '' ? '<i class="ion ion-ios-arrow-right" style="padding-right: 5px; padding-left: 5px;"></i>' : '';
-
-        echo Html::beginTag('h3', ['class' => 'box-title']);
-            echo Html::tag('i', '', ['class' => MagicSelectHelper::getIcon($this->model->formName()), 'style' => 'font-size: x-large; text-decoration: none; padding-right: 5px; color:orange;']);
-            echo Html::tag('strong', $this->title, ['style' => 'font-size: x-large; text-decoration: none; color:black']);
-            echo Html::tag('small', $icon . $this->getSubTitle(), ['style' => 'font-size: large; text-decoration:none;']);
-        echo Html::endTag('h3');
-
-        echo Html::beginTag('div', ['class' => 'box-tools pull-right for-buttons-modal', 'style' => 'top: 10px']);
-        if (is_array($this->buttons)) {
+        $thml = Html::beginTag('div', ['class' => 'box-tools pull-right for-buttons-modal']);
+        if (is_array($this->buttons)){
             foreach ($this->buttons as $button) {
-                echo $button;
+                $thml .= $button;
             }
-        } else if ($this->buttons === true or is_array($this->buttons)) {
-            if ($this->action == 'create' or $this->action == 'update' or $this->set_form) {
-                echo $this->view->render($this->base_view . 'views/footer_form', ['model' => $this->model, 'buttons' => $this->buttons]);
+        }else if ($this->buttons !== false) {
+            switch ($this->getAction()){
+                case 'index' :$thml .= $this->setButtonsIndex(); break;
+                case 'view' : $thml .= $this->setButtonsView(); break;
             }
         }
-        echo Html::endTag('div');
+        return $thml .= Html::endTag('div');
     }
 
-    private function htmlBodyBegin()
+    private function getFormButtons()
     {
-        echo Html::beginTag('div', ['class' => '', 'style' => 'background-color:white; border-radius: 0;padding: -12px; padding-right: -12px;']);
-            echo Html::beginTag('div', ['class' => 'box-body pad content-in-modal']);
-                echo Html::beginTag('div', ['class' => 'col-md-12', 'style' => 'padding-left: 6px; padding-right: 6px;']);
-                    echo Html::beginTag('div', ['class' => 'row', 'style' => 'margin-bottom: -20px;']);
-                        echo Html::beginTag('div', ['class' => 'col-md-12']);
-                            echo Html::beginTag('div', []);
-                                echo Html::beginTag('div', ['class' => 'box-body']);
+        $thml = Html::beginTag('div', ['class' => 'box-tools pull-right']);
+        if (is_array($this->buttons)){
+            foreach ($this->buttons as $button){
+                $thml .= $button;
+            }
+        }else if ($this->buttons !== false) {
+            if ($this->getAction() == 'create' or $this->getAction() == 'update' or $this->form) {
+                $thml .= $this->view->render($this->baseView . '/footer_form', ['model' => $this->model]);
+            }else{
+                switch ($this->getAction()){
+                    case 'index' :$thml .= $this->setButtonsIndex(); break;
+                    case 'view' : $thml .= $this->setButtonsView(); break;
+                    case 'create' : $thml .= '<a class="btn btn-defautl">Save</a>'; break;
+                    case 'update' : $thml .= '<a class="btn btn-defautl">Save</a>'; break;
+                }
+            }
+        }
+        return $thml .= Html::endTag('div');
     }
 
-    private function htmlBodyEnd()
-    {
-                                echo Html::endTag('div');
-                            echo Html::endTag('div');
-                        echo Html::endTag('div');
-                    echo Html::endTag('div');
-                echo Html::endTag('div');
-            echo Html::endTag('div');
-        echo Html::endTag('div');
+    private function isModal(){
+        return ArrayHelper::getValue(\Yii::$app->request->getQueryParams(), 'magic_modal_name', false);
     }
 
-    public function getOnClose()
+    public function setButtonsIndex()
     {
-        return Yii::$app->request->isAjax ? ArrayHelper::getValue(Yii::$app->request->getQueryParams(), 'onclose', '') : null;
+        $buttons = '';
+        $unsetButtons = [];
+
+        $html = Html::beginTag('div', ['class' => 'box-tools pull-right']);
+        if(is_array($this->buttons)){
+            $unsetButtons = ArrayHelper::getValue($this->buttons, 'unsetButtons', []);
+
+            $_buttons = ArrayHelper::getValue($this->buttons, 'buttons', []);
+            foreach ($_buttons as $button) {
+                $buttons .= $button;
+            }
+        }
+
+        if (method_exists($this->getController(), 'actionCreate') && !in_array('create', $unsetButtons)) {
+            $buttons .= GhostHtml::a(
+                '<span class="ion ion-android-add"></span> ' . Yii::t('magicview', 'Create'),
+                ['create'],
+                [
+                    'class' =>  'magic-modal btn btn-social btn-flat btn-success btn-group',
+                    'ajaxOptions' => 'confirmToClose:true,confirmToSend:true',
+                    'jsFunctions'   => 'afterExecute:location.reload(),beforeLoad:false,whenClose:location.reload(),activeWhenClose:false',
+                ]
+            );
+        }
+
+        return $html . $buttons . Html::endTag('div');
     }
+
+    private function setButtonsView()
+    {
+        $requestIsAjax = $this->isModal();
+        $buttons = '';
+        if (method_exists($this->getController(), 'actionUpdate')) {
+            $buttons .= GhostHtml::a(
+                '<i class="' . (!$requestIsAjax ? 'ion ion-android-create' : 'fa fa-pencil') . '"></i> ' . Yii::t('magicview', 'Update'),
+                ['update', 'id' => $this->model->id],
+                [
+                    'ajaxOptions' => 'send:' . ($requestIsAjax ? 'true' : 'false') . ', response:false, from:false',
+                    'jsFunctions' => 'afterExecute:' . ($requestIsAjax ? ($this->getCallBack() ? $this->getCallBack() : $this->model->formName() . '.execute()') : 'location.reload()') . ',beforeLoad:false,whenClose:' . ($requestIsAjax ? $this->model->formName() . '.setActiveWhenClose()' : '') . ',activeWhenClose:true',
+                    'class' =>  ($this->isModal() ? 'magic-modal' : '') . ' btn btn-link',
+                    'type' => 'button'
+                ]
+            );
+        }
+
+        if (method_exists($this->getController(), 'actionDelete')) {
+            $buttons .= GhostHtml::a(
+                '<i class="' . (!$requestIsAjax ? 'ion ion-ios-trash-outline' : 'fa fa-trash') . '"></i> ' . (!$requestIsAjax ? Yii::t('magicview', 'Delete') : ''),
+                ['delete', 'id' => $this->model->id],
+                [
+                    'class' => 'btn btn-warning btn-flat execute_delete' . ($requestIsAjax ? '' : ' btn-social'),
+                    'onClick' => 'return false;',
+                    'type' => 'button'
+                ]
+            );
+        }
+
+        if (method_exists($this->getController(), 'actionPdf')) {
+            $buttons .= GhostHtml::a(
+                '<i class="fa fa-file-pdf-o"></i> ' . (!$requestIsAjax ? 'PDF' : ''),
+                ['pdf', 'id' => $this->model->id],
+                [
+                    'class' => 'btn btn-danger btn-flat' . ($requestIsAjax ? '' : ' btn-social'),
+                    'target' => '_blank',
+                    'type' => 'button'
+                ]
+            );
+        }
+
+        return $buttons;
+    }
+
+    public function getClassController()
+    {
+        return get_class(Yii::$app->controller);
+    }
+
+    public function getController()
+    {
+        $_controller = Yii::$app->controller->id;
+
+        $class_controller = $this->getClassController();
+
+        return new $class_controller(1, $_controller, '');
+    }
+
+    /**
+     * @return mixed|string
+     */
+    private function getModule()
+    {
+        if($this->model){
+            foreach ($_class = explode('\\', $this->model->className()) as $key => $value){
+                if($value == 'modules'){
+                    return ArrayHelper::getValue($_class, $key + 1, null);
+                    break;
+                }
+            }
+        }else{
+            $_controller = Yii::$app->controller->id;
+
+            $class_controller = $this->getClassController();
+
+            return new $class_controller(1, $_controller, '');
+        }
+        
+
+        return null;
+    }
+
+    private function getCallBack()
+    {
+        return Yii::$app->request->isAjax ? ArrayHelper::getValue(Yii::$app->request->getQueryParams(), 'callback', '') : null;
+    }
+
 }
