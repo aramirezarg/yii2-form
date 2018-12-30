@@ -28,7 +28,7 @@ class MagicView extends Widget
     public $buttons;
     public $subContainer = true;
 
-    public $baseView = '@vendor/magicsoft/yii2-form/src/views';
+    public $sources = '@vendor/magicsoft/yii2-form/src/views';
 
     public function init()
     {
@@ -170,7 +170,7 @@ class MagicView extends Widget
             }
         }else if ($this->buttons !== false) {
             if ($this->getAction() == 'create' or $this->getAction() == 'update' or $this->form) {
-                $thml .= $this->view->render($this->baseView . '/footer_form', ['model' => $this->model]);
+                $thml .= $this->view->render($this->sources . '/footer_form', ['model' => $this->model]);
             }else{
                 switch ($this->getAction()){
                     case 'index' :$thml .= $this->setButtonsIndex(); break;
