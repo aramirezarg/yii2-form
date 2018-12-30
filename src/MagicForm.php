@@ -38,7 +38,6 @@ class MagicForm extends ActiveForm
             /* @var $widget Widget */
             if($widget->setFormat) $widget->magicView::end();
         }
-
     }
 
     private function getSetFormat()
