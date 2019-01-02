@@ -28,7 +28,7 @@ class MagicView extends Widget
     public $buttons;
     public $subContainer = true;
 
-    public $sources = '@vendor/magicsoft/yii2-form/src/views';
+    public $baseView = '@vendor/magicsoft/yii2-form/src/views';
 
     public function init()
     {
@@ -50,11 +50,6 @@ class MagicView extends Widget
         return ArrayHelper::getValue($defultSubTitles, $message, '');
     }
 
-    public static function begin($config = [])
-    {
-        return parent::begin($config);
-    }
-
     public static function end()
     {
         $widget = end(self::$stack);
@@ -73,9 +68,9 @@ class MagicView extends Widget
             $html .= Html::beginTag('div', ['class' => $this->getModelName() . '-form']);
         }
 
-        $html .= Html::beginTag('div', ['class' => 'box box-default']);
+        $html .= Html::beginTag('div', ['class' => 'msbox msbox-default']);
         $html .= $this->headPanel();
-        if($this->subContainer) $html .= Html::beginTag('div', ['class' => 'box-body']);
+        if($this->subContainer) $html .= Html::beginTag('div', ['class' =>'msbox-body']);
 
         echo $html;
     }
@@ -102,17 +97,17 @@ class MagicView extends Widget
 
     private function headPanel()
     {
-        return Html::tag('div',$this->getHtmlTitle(), ['class' => 'box-header header-form modal-header', 'style' => 'background-color: whitesmoke']);
+        return Html::tag('div',$this->getHtmlTitle(), ['class' => 'msbox-header header-form modal-header', 'style' => 'background-color: whitesmoke']);
     }
 
     private function bodyPanel(){}
 
     private function footerPanel(){
-        return Html::tag('div', $this->getFormButtons(), ['class' => 'box-footer footer-form control_modal no-margin', 'style' => 'background-color: whitesmoke']);
+        return Html::tag('div', $this->getFormButtons(), ['class' => 'msbox-footer footer-form control_modal no-margin', 'style' => 'background-color: whitesmoke']);
     }
 
     private function getHtmlTitle(){
-        return Html::tag('h3', $this->getIcon() . $this->getTitle() . $this->getDivisor() . $this->getSubTitle(), ['class' => 'box-title']) . $this->getButtons();
+        return Html::tag('h3', $this->getIcon() . $this->getTitle() . $this->getDivisor() . $this->getSubTitle(), ['class' => 'msbox-title']) . $this->getButtons();
     }
 
     private function getIcon()
@@ -147,7 +142,7 @@ class MagicView extends Widget
 
     private function getButtons()
     {
-        $thml = Html::beginTag('div', ['class' => 'box-tools pull-right for-buttons-modal']);
+        $thml = Html::beginTag('div', ['class' => 'msbox-tools pull-right for-buttons-modal']);
         if (is_array($this->buttons)){
             foreach ($this->buttons as $button) {
                 $thml .= $button;
@@ -163,20 +158,18 @@ class MagicView extends Widget
 
     private function getFormButtons()
     {
-        $thml = Html::beginTag('div', ['class' => 'box-tools pull-right']);
+        $thml = Html::beginTag('div', ['class' => 'msbox-tools pull-right']);
         if (is_array($this->buttons)){
             foreach ($this->buttons as $button){
                 $thml .= $button;
             }
         }else if ($this->buttons !== false) {
             if ($this->getAction() == 'create' or $this->getAction() == 'update' or $this->form) {
-                $thml .= $this->view->render($this->sources . '/footer_form', ['model' => $this->model]);
+                $thml .= $this->view->render($this->baseView . '/footer_form', ['model' => $this->model]);
             }else{
                 switch ($this->getAction()){
                     case 'index' :$thml .= $this->setButtonsIndex(); break;
                     case 'view' : $thml .= $this->setButtonsView(); break;
-                    case 'create' : $thml .= '<a class="btn btn-defautl">Save</a>'; break;
-                    case 'update' : $thml .= '<a class="btn btn-defautl">Save</a>'; break;
                 }
             }
         }
@@ -192,7 +185,7 @@ class MagicView extends Widget
         $buttons = '';
         $unsetButtons = [];
 
-        $html = Html::beginTag('div', ['class' => 'box-tools pull-right']);
+        $html = Html::beginTag('div', ['class' => 'msbox-tools pull-right']);
         if(is_array($this->buttons)){
             $unsetButtons = ArrayHelper::getValue($this->buttons, 'unsetButtons', []);
 
@@ -239,7 +232,7 @@ class MagicView extends Widget
                 '<i class="' . (!$requestIsAjax ? 'ion ion-ios-trash-outline' : 'fa fa-trash') . '"></i> ' . (!$requestIsAjax ? Yii::t('magicview', 'Delete') : ''),
                 ['delete', 'id' => $this->model->id],
                 [
-                    'class' => 'btn btn-warning btn-flat execute_delete' . ($requestIsAjax ? '' : ' btn-social'),
+                    'class' => 'magic-confirm btn btn-warning btn-flat ' . ($requestIsAjax ? '' : ' btn-social'),
                     'onClick' => 'return false;',
                     'type' => 'button'
                 ]
@@ -294,7 +287,6 @@ class MagicView extends Widget
 
             return new $class_controller(1, $_controller, '');
         }
-        
 
         return null;
     }
@@ -303,5 +295,4 @@ class MagicView extends Widget
     {
         return Yii::$app->request->isAjax ? ArrayHelper::getValue(Yii::$app->request->getQueryParams(), 'callback', '') : null;
     }
-
 }

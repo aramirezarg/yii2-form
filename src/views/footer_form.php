@@ -5,7 +5,7 @@ use yii\helpers\Html;
 <?=Html::submitButton(
     Yii::t('magicform',$model->isNewRecord ? 'Create' : 'Update'),
     [
-        'class' => 'magic-form-submit btn btn-success',
+        'class' => 'magic-form-submit btn btn-success ',
         'style' => 'padding-right: 10px;'
     ]
 );?>
