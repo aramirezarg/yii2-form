@@ -229,7 +229,7 @@ class MagicView extends Widget
                     'magic-modal-name' => $this->model->formName(),
                     'jsFunctions' => 'afterExecute:' . (
                         $requestIsAjax ? (
-                                $this->getCallBack() ? $this->getCallBack() : $this->model->formName() . '.execute()'
+                                $this->getCallBack() ? $this->getCallBack() : 'View' . $this->model->formName() . '.execute()'
                             ) : 'location.reload()'
                         ) . ',beforeLoad:false,whenClose:' . ($requestIsAjax ? $this->model->formName() . '.setActiveWhenClose()' : '') . ',activeWhenClose:true',
                     'class' =>  ($this->configModelIsAjax() ? 'magic-modal' : '') . ' btn btn-primary',

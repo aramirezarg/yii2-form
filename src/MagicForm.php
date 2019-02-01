@@ -23,7 +23,8 @@ class MagicForm extends \kartik\form\ActiveForm
         $this->initI18N(MagicSoftModule::getSorceLangage(), 'magicform');
 
         $this->id = $this->formId ? $this->formId : strtolower(  (isset($this->model->formName) ? $this->model->formName() : '--') . '-form' );
-        $this->setFormat = $this->setFormat ? $this->setFormat : $this->getSetFormat();
+
+        $this->setFormat = ($this->setFormat === null ? true : ($this->setFormat === false ? false : $this->getSetFormat()));
 
         parent::init();
 
