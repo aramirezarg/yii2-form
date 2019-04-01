@@ -7,6 +7,7 @@
 
 namespace magicsoft\form;
 
+use magicsoft\base\MagicCrypto;
 use magicsoft\base\MagicFormatter;
 use magicsoft\base\MagicSelectHelper;
 use magicsoft\base\MagicSoftModule;
@@ -21,21 +22,78 @@ class MagicView extends Widget
     use TranslationTrait;
     
     public $model;
+    public $model_id = 'id';
     public $form;
 
     public $title;
     public $subTitle;
     public $buttons;
     public $subContainer = true;
+    public $breadcrumbs = true;
 
     public $baseView = '@vendor/magicsoft/yii2-form/src/views';
 
     public function init()
     {
         $this->initI18N(MagicSoftModule::getSorceLangage(), 'magicview');
-        
+        $this->renderBreadcrumbs();
+
         $this->beginPanel();
         parent::init();
+    }
+
+    private function renderBreadcrumbs()
+    {
+        $this->title = $this->getTitle();
+
+        if ($this->breadcrumbs || $this->breadcrumbs == null) {
+            $indexTitle = MagicSelectHelper::getPluralTitle($this->model ? $this->model->tableName() : null);
+
+            if ($this->getAction() == 'index') {
+                $this->view->params['breadcrumbs'][] = $indexTitle;
+            }
+
+            if ($this->getAction() == 'create') {
+                $this->view->params['breadcrumbs'][] = ['label' => $indexTitle, 'url' => ['index']];
+                $this->view->params['breadcrumbs'][] = 'Create';
+            }
+
+            if ($this->getAction() == 'view') {
+
+                $this->view->params['breadcrumbs'][] = ['label' => $indexTitle, 'url' => ['index']];
+                $this->view->params['breadcrumbs'][] = ['label' =>$this->getDescription()];
+            }
+
+            if ($this->getAction() == 'update') {
+                $this->view->params['breadcrumbs'][] = ['label' => $indexTitle, 'url' => ['index']];
+                $this->view->params['breadcrumbs'][] = ['label' => $this->getDescription(), 'url' => ['view', 'id' => $this->model->{$this->model_id}]];
+                $this->view->params['breadcrumbs'][] = 'Update';
+            }
+        }
+    }
+
+    /**
+     * @return string
+     */
+    private function getValue()
+    {
+        $modelClass = $this->model->modelClass;
+        $class = new $modelClass;
+
+        $this->searchData = ($class->hasProperty('name') ? 'name' : ($class->hasProperty('description') ? 'description' : null));
+
+
+        $model = null;
+        if($this->model && $this->model->{$this->relation}){
+            $model = $this->model->{$this->relation};
+        }
+
+        if($model && $this->join){
+            if($model->{$this->join})
+                $model = $model->{$this->join};
+        }
+
+        return $model ? MagicSelectHelper::getDataDescription($model, MagicCrypto::encrypt($this->returnData)) : null;
     }
 
     private function getDefaultMessage($message){
@@ -116,8 +174,8 @@ class MagicView extends Widget
             Html::tag('div',
                 Html::tag('div',
                     Html::tag('a',
-                        $this->getTitle() . " | " . $this->getSubTitle(),
-                        ['class' => 'title card-title', 'style' => 'font-size: 22px']
+                        '<strong>' . $this->getTitle() . "</strong> | " . $this->getSubTitle(),
+                        ['class' => 'title card-title', 'style' => 'font-size: 22px; text-decoration:none; color: black']
                     ),
                     ['class' => 'col-md-7 col-8', 'style' => 'text-align: left; padding-left: 0']
                 ) .
@@ -136,9 +194,18 @@ class MagicView extends Widget
         return Html::tag('i', '', ['class' => 'fa fa-list-ul', 'style' => 'padding-right: 5px; ']);
     }
 
-    private function getTitle()
+    protected function getTitle()
     {
-        return  Html::tag('strong', ucwords($this->title ? $this->title : ($this->model ? $this->model->formName() : Yii::$app->controller->id)));
+        return  ucwords($this->title ? $this->title : MagicSelectHelper::getSingularTitle(($this->model ? $this->model->tableName() : Yii::$app->controller->id)));
+    }
+
+    public function getDescription(){
+        $modelClass = $this->model->className();
+        $class = new $modelClass;
+
+        $modelAttribute = ($class->hasProperty('name') ? 'name' : ($class->hasProperty('description') ? 'description' : null));
+
+        return $modelAttribute ? $this->model->{$modelAttribute} : null;
     }
 
     private function getSubTitle()

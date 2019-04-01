@@ -29,8 +29,6 @@ class MagicForm extends \kartik\form\ActiveForm
         parent::init();
 
         if($this->setFormat) $this->magicView = MagicView::begin(array_merge($this->formatOptions, ['form' => $this, 'model' => $this->model]));
-
-
     }
 
     public static function end()
@@ -47,7 +45,6 @@ class MagicForm extends \kartik\form\ActiveForm
                 parent::end();
             }
         }
-        //parent::end();
     }
 
     private function getSetFormat()
