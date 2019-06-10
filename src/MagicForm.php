@@ -4,6 +4,8 @@ namespace magicsoft\form;
 
 use magicsoft\base\MagicSoftModule;
 use magicsoft\base\TranslationTrait;
+use ReflectionClass;
+use yii\base\InvalidConfigException;
 use yii\bootstrap\ActiveForm;
 use yii\helpers\ArrayHelper;
 
@@ -22,7 +24,7 @@ class MagicForm extends \kartik\form\ActiveForm
     {
         $this->initI18N(MagicSoftModule::getSorceLangage(), 'magicform');
 
-        $this->id = $this->formId ? $this->formId : strtolower(  (isset($this->model->formName) ? $this->model->formName() : '--') . '-form' );
+        $this->id = $this->formId ? $this->formId : $this->getModelFormName();
 
         $this->setFormat = ($this->setFormat === null ? true : ($this->setFormat === false ? false : $this->getSetFormat()));
 
@@ -50,5 +52,15 @@ class MagicForm extends \kartik\form\ActiveForm
     private function getSetFormat()
     {
         return ArrayHelper::getValue(\Yii::$app->request->getQueryParams(), 'magic_modal_name', true);
+    }
+
+    private function getModelFormName()
+    {
+        $reflector = new ReflectionClass($this->model);
+        if (PHP_VERSION_ID >= 70000 && $reflector->isAnonymous()) {
+            throw new InvalidConfigException('The "formName()" method should be explicitly defined for anonymous models');
+        }
+
+       return strtolower($reflector->getShortName() . '-form');
     }
 }
